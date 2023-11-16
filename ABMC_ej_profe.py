@@ -21,6 +21,7 @@ En nuestro caso: 4 caracteres para legajo + 25 caracteres para el nombre, + 1 ca
 
 
 """
+
 def ingresarDatos():
     legajo=input("Ingrese el Legajo=>")
     nombre=input("Ingrese el Nombre=>")

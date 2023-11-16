@@ -1,2 +1,3 @@
-Agustin;Perez;12345678911;1
-Brian;Saad;00000000000;1
+12345678911;Agustin                  ;Sarmiento                ;1
+00000000000;Agustin                  ;Saad                     ;1
+12345678901;Lucas                    ;Iglesias                 ;1
