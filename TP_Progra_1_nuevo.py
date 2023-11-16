@@ -87,7 +87,11 @@ def alta_proveedor():
 
         arch = open('proveedor.txt', 'a')     # abro el archivo en append para el agregado de registros
         for key, value in proveedor.items():  #items aparece en la ppt
-            arch.write(f"{key}: {value}"+";")    # uso de f string
+            if(key == "Activo"):
+                arch.write(f"{value}") # Si es el ultimo valor no poner ;
+            else:
+                arch.write(f"{value}"+";") # uso de f string
+             
         arch.write("\n")
         arch.close()
         #se escriben los datos del proveedor mediante el diccionario proveedor, donde se almacenan la info como key y los datos como value
@@ -101,18 +105,17 @@ def baja_proveedor():
     archivo = open("proveedor.txt", "r+")
     cuit_buscado=input("Ingrese el CUIT: ")
     cuit_buscado=cuit_buscado.rjust(11,'0')
-
-    posant=0 # Guardo la posicion del puntero del archivo al inicio (posant=0)
+    posant= 0 # Guardo la posicion del puntero del archivo al inicio (posant=0)
     linea=archivo.readline()
-    encontrado=False   
+    encontrado = False   
     while linea and not encontrado: # Leo hasta fin de archivo (linea vacía) o hasta que lo encuentre
         nombre_prov, apellido_prov, CUIT, activo = linea.strip().split(";")
-        if (cuit_buscado==CUIT and activo=="1"):        
-            encontrado=True
+        if (cuit_buscado == CUIT and activo== "1"):        
+            encontrado = True
             nueva_linea=f"{nombre_prov};{apellido_prov};{CUIT};0\n" # Dejamos todo como estaba, menos el estado que queda en 0
         else:
-            posant=archivo.tell() # Guardo la posicion del puntero por si el siguiente registro es el que quiero modificar
-            linea=archivo.readline() # Leo la siguiente linea (registro). El puntero del archivo se mueve a la línea siguiente.      
+            posant = archivo.tell() # Guardo la posicion del puntero por si el siguiente registro es el que quiero modificar
+            linea = archivo.readline() # Leo la siguiente linea (registro). El puntero del archivo se mueve a la línea siguiente.      
     if encontrado: # Si encontré el registro a modificar
         
         archivo.seek(posant) # Me posiciono en el registro (linea) a borrar .
@@ -132,35 +135,39 @@ def modificar_proveedor():
     # Código para modificar el nombre de un proveedor en el archivo SOLO EL NOMBRE
     
 
+
 def listar_proveedores():
     try:
-        with open('proveedor.txt', 'r') as archivo:
-            lista_proveedores = []  # Lista para almacenar los proveedores
+        arch = open('proveedor.txt', 'r')  # Abro el archivo en modo lectura
+        
+        # Inicializo una lista vacía para almacenar los proveedores
+        proveedores = []
+        
+        # Leo línea por línea y almaceno cada proveedor en la lista
+        for linea in arch:
+            proveedores.append(linea.strip())
+        
+        arch.close()  # Cierro el archivo
+        
+        # Ordeno la lista de proveedores por CUIT
+        proveedores.sort(key=lambda x: int(x.split(';')[2]))  # Ordeno por CUIT
 
-            for linea in archivo:  # Itera sobre cada línea del archivo
-                datos = linea.strip().split(";")
-                proveedor_info = {}
+        encabezados =["Nombre", "Apellido", "CUIT", "Activo"]
 
-                for dato in datos:
-                    if ":" in dato:  # Verifica el formato clave: valor
-                        clave, valor = dato.split(": ", 1)
-                        proveedor_info[clave] = valor
-                    else:
-                        print(f"Formato incorrecto en la línea: {dato}. Se omitirá.")
-
-                if proveedor_info:  # Agrega a la lista solo si hay información válida
-                    lista_proveedores.append(proveedor_info)
-
-            # Ordena la lista de proveedores por CUIT de menor a mayor sin usar get()
-            lista_proveedores.sort(key=lambda x: int(x["CUIT"]))
-
-            # Muestra la lista ordenada
-            print("Listado de proveedores ordenados por CUIT de menor a mayor:")
-            for proveedor in lista_proveedores:
-                print(proveedor)
+        for encabezado in encabezados:
+            print(encabezado, end='\t')  # Imprimo encabezado separados por tab
+        print("\n---------------------------------------------------")
+        
+        # Muestro los proveedores ordenados en la terminal con el ; reemplazado por espacio
+        for proveedor in proveedores:
+            datos = proveedor.split(';')
+            for dato in datos:
+                print(dato.replace(';', ' '), end='\t')  # Reemplazo ; por espacio y separo por tabulación
+            print()  # Salto de línea entre cada proveedor
 
     except FileNotFoundError:
-        print("El archivo de proveedores no existe.")
+        print("El archivo proveedor.txt no se encuentra.")
+
 
 
 def carga_compras():

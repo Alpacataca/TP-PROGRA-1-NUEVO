@@ -1,3 +1,2 @@
-Nombre: Brian;Apellido: Saad;CUIT: 00000000000;Activo: 1;
-Nombre: Agustin;Apellido: Perez;CUIT: 20455832471;Activo: 1;
-Nombre: Lucas;Apellido: Iglesias;CUIT: 19123123456;Activo: 1;
+Agustin;Perez;12345678911;1
+Brian;Saad;00000000000;1
