@@ -163,40 +163,8 @@ def listar_proveedores():
         print("El archivo proveedor.txt no se encuentra.")
 
 
-#def carga_compras():
-    try:
-        arch = open('proveedor.txt', 'r+')  # Abro el archivo en modo lectura
-
-        while True:
-            cuit = input("Ingrese el CUIT del proveedor (-1 para salir): ")
-            if cuit == '-1':
-                break
-
-            # Validar el formato de CUIT (ejemplo simple)
-            if cuit.isdigit()==False or len(cuit) != 11:
-                print("Formato de CUIT incorrecto. Debe tener 11 dígitos.")
-                cuit = input("Ingrese el CUIT del proveedor (-1 para salir): ")
-
-            monto_compra = input("Ingrese el monto de la compra: ")
-            # Validar el formato del monto (máximo 10 dígitos y dos decimales)
-
-            monto = float(monto_compra)
-            while (0 <= monto <= 9999999999.99) == False:
-                print("Monto inválido. Debe ser un número entre 0 y 9999999999.99.")
-                monto_compra = input("Ingrese el monto de la compra: ")
-            
-    
-            
-            csv_writer.writerow([cuit, monto_compra])
-
-    except FileNotFoundError:
-        print("El archivo proveedor.txt no se encuentra.")
-
-    print("Carga de compras finalizada.")
-
-
-
-
+def carga_compras():
+    pass
 
 def listar_montos_compras():
     # Código para listar montos de compras por proveedor ordenados por CUIT desde el archivo 
@@ -249,9 +217,7 @@ def main():
             print("Opción no válida. Por favor, elija una opción válida.")
 
             
-if __name__ == "__main__":
-    main()
-
+main()
 
 
 
