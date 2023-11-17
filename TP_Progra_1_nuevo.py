@@ -30,9 +30,11 @@ def ingresodatos():
             ("Guardado correto del apellido")
 
         CUIT=CUIT.rjust(11,'0')
-        nombre_proveedor=nombre_proveedor.ljust(25,' ')
-        apellido_proveedor = apellido_proveedor.ljust(25,' ')
 
+        nombre_proveedor=nombre_proveedor.ljust(25,' ')
+
+        apellido_proveedor = apellido_proveedor.ljust(25,' ')
+        
         return CUIT,nombre_proveedor,apellido_proveedor
 
 def alta_proveedor():       #ver el tema de repeticion de cuits
@@ -45,13 +47,13 @@ def alta_proveedor():       #ver el tema de repeticion de cuits
 
         archivo.seek(0) # Como se abrío como append, queda el puntero al final del archivo, por lo que es necesario volverlo al inicio
 
-        linea=archivo.readline()
+        linea=archivo.readline()         # empiezo a leer las lineas
 
-        encontrado=False
+        encontrado = False
 
-        while linea and not encontrado:
+        while linea and not encontrado:          
             if len(linea.split(";")) == 4:
-                v_CUIT , v_nombre , v_apellido , v_activo = linea.split(";")
+                v_CUIT , v_nombre , v_apellido , v_activo = linea.split(";")  #lees el archivo y si hay algo en la linea, lo asignas a las variables
 
                 if (CUIT == v_CUIT):
                     encontrado = True
@@ -76,17 +78,18 @@ def alta_proveedor():       #ver el tema de repeticion de cuits
 
 def baja_proveedor():
     print("Baja de proveedores")
+
     archivo = open("proveedor.txt", "r+")
-    cuit_buscado=input("Ingrese el CUIT:")
+    cuit_buscado=input("Ingrese el CUIT buscado:")
     cuit_buscado=cuit_buscado.rjust(11,'0')
-    posant=0 # Guardo la posicion del puntero del archivo al inicio (posant=0)
+    posant= 0 # Guardo la posicion del puntero del archivo al inicio (posant=0)
     linea=archivo.readline()
     encontrado=False   
     while linea and not encontrado: # Leo hasta fin de archivo (linea vacía) o hasta que lo encuentre
         CUIT, nombre_prov, apellido_prov, activo = linea.strip().split(";")
         if (cuit_buscado==CUIT and activo=="1"):        
             encontrado=True
-            nueva_linea=f"{CUIT};{nombre_prov};{apellido_prov};0\n" # Dejamos todo como estaba, menos el estado que queda en 0
+            nueva_linea = f"{CUIT};{nombre_prov};{apellido_prov};0\n" # Dejamos todo como estaba, menos el estado que queda en 0
         else:
             posant=archivo.tell() # Guardo la posicion del puntero por si el siguiente registro es el que quiero modificar
             linea=archivo.readline() # Leo la siguiente linea (registro). El puntero del archivo se mueve a la línea siguiente.      
@@ -94,7 +97,7 @@ def baja_proveedor():
         
         archivo.seek(posant) # Me posiciono en el registro (linea) a borrar .
         # Borrado Logico
-        archivo.write(nueva_linea) 
+        archivo.write(nueva_linea)
         print("Proveedor dado de baja exitosamente")
     else:
         print("CUIT no encontrado o dado de baja")
@@ -107,16 +110,30 @@ def baja_proveedor():
 def modificar_proveedor():
     print("Modificaciones de proveedores")
     archivo = open("proveedor.txt", "r+t")
-    CUIT, nombre, apellido = ingresodatos()
-    posant=0 # Guardo la posicion del puntero del archivo al inicio (posant=0)
+
+    CUIT=input("Ingrese el CUIT a buscar: ")
+
+    while (CUIT.isnumeric() and len(CUIT) == 11)== False:
+
+        print("CUIT inválido. Debe contener exactamente 11 dígitos numéricos.")
+
+        CUIT = input("Ingrese CUIT del proveedor a buscar: ")
+
+    nombre=input("Ingrese el Nombre: ")
+    while (nombre.isalpha())==False:
+
+            print("El nombre debe contener solo letras. Inténtelo nuevamente.")
+            nombre = input("Ingrese el nombre del proveedor: ")
+
+    posant = 0 # Guardo la posicion del puntero del archivo al inicio (posant=0)
     linea=archivo.readline()
     encontrado=False   
     while linea and not encontrado: # Leo hasta fin de archivo (linea vacía) o hasta que lo encuentre
-        v_CUIT, v_nombre,v_apellido, v_activo=linea.split(";")   #guardo los datos de la linea en 5 variables
+        v_CUIT, v_nombre ,v_apellido, v_activo=linea.split(";")   #guardo los datos de la linea en 5 variables
         v_activo =v_activo.rstrip('\n')
         if (CUIT==v_CUIT and v_activo=="1"):        
             encontrado=True
-            linea_nueva = CUIT + ";" + nombre + ";" + apellido + ";" +"1\n" # Observese que ponemos el nombre del input, para que se modifique
+            linea_nueva = v_CUIT + ";" + nombre + ";" + v_apellido + ";" +"1\n" # Observese que ponemos el nombre del input, para que se modifique
         else:
             posant=archivo.tell() # Guardo la posicion del puntero por si el siguiente registro es el que quiero modificar
         linea=archivo.readline() # Leo la siguiente linea (registro). El puntero del archivo se mueve a la línea siguiente.      
@@ -127,7 +144,7 @@ def modificar_proveedor():
         archivo.write(linea_nueva) # Sobreescribo el registro con la línea modificada (lineaC)        
         print("Registro editado exitosamente")
     else:
-        print("Legajo no encontrado o dado de baja")
+        print("CUIT no encontrado o dado de baja")
     archivo.close() # Cierro el archivo
         
     input("Presione una tecla para continuar")
@@ -144,17 +161,10 @@ def listar_proveedores():
         # Leo línea por línea y almaceno cada proveedor en la lista
         for linea in arch:
             proveedores.append(linea.strip())
-        
         arch.close()  # Cierro el archivo
         
         # Ordeno la lista de proveedores por CUIT
         proveedores.sort(key=lambda x: int(x.split(';')[0]))  # Ordeno por CUIT
-
-        encabezados =["Nombre", "Apellido", "CUIT", "Activo"]
-
-        for encabezado in encabezados:
-            print(encabezado, end='\t')  # Imprimo encabezado separados por tab
-        print("\n---------------------------------------------------")
         
         # Muestro los proveedores ordenados en la terminal con el ; reemplazado por espacio
         for proveedor in proveedores:
@@ -167,9 +177,40 @@ def listar_proveedores():
         print("El archivo proveedor.txt no se encuentra.")
 
 
-def carga_compras():
-    # Código para cargar compras de un proveedor en el archivo # LA CARGA SE FINALIZA COMO -1 Y SE ESCRIBE EN PROVEEDORES.CSV AL LADO DE LA INFO DEL PROVEEDOR
-    pass
+#def carga_compras():
+    try:
+        arch = open('proveedor.txt', 'r+')  # Abro el archivo en modo lectura
+
+        while True:
+            cuit = input("Ingrese el CUIT del proveedor (-1 para salir): ")
+            if cuit == '-1':
+                break
+
+            # Validar el formato de CUIT (ejemplo simple)
+            if cuit.isdigit()==False or len(cuit) != 11:
+                print("Formato de CUIT incorrecto. Debe tener 11 dígitos.")
+                cuit = input("Ingrese el CUIT del proveedor (-1 para salir): ")
+
+            monto_compra = input("Ingrese el monto de la compra: ")
+            # Validar el formato del monto (máximo 10 dígitos y dos decimales)
+
+            monto = float(monto_compra)
+            while (0 <= monto <= 9999999999.99) == False:
+                print("Monto inválido. Debe ser un número entre 0 y 9999999999.99.")
+                monto_compra = input("Ingrese el monto de la compra: ")
+            
+    
+            
+            csv_writer.writerow([cuit, monto_compra])
+
+    except FileNotFoundError:
+        print("El archivo proveedor.txt no se encuentra.")
+
+    print("Carga de compras finalizada.")
+
+
+
+
 
 def listar_montos_compras():
     # Código para listar montos de compras por proveedor ordenados por CUIT desde el archivo 
