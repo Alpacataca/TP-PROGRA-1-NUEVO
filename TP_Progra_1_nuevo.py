@@ -1,4 +1,3 @@
-
 #anda
 def ingresodatos(): 
         CUIT=input("Ingrese el CUIT: ")
@@ -53,7 +52,7 @@ def alta_proveedor():
 
         while linea and not encontrado:          
             if len(linea.split(";")) == 4:
-                v_CUIT , v_nombre , v_apellido= linea.split(";")  #lees el archivo y si hay algo en la linea, lo asignas a las variables
+                v_CUIT = linea.split(";")[0]  #lees el archivo y si hay algo en la linea, lo asignas a las variables
 
                 if (CUIT == v_CUIT):
                     encontrado = True
@@ -63,7 +62,7 @@ def alta_proveedor():
                 linea = archivo.readline() #leo la siguiente linea del archivo    
 
         if not encontrado:
-            linea= CUIT + ";" + nombre + ";" + apellido +"\n"
+            linea= CUIT + ";" + nombre + ";" + apellido + "\n"
             archivo.write(linea) # agrego el proveedor al final del archivo ya que no se lo encontro en el archivo y se llego al final
         else:
             print("CUIT existente, no puede ser duplicado. ")
@@ -78,29 +77,28 @@ def baja_proveedor():
     print("Baja de proveedores")
 
     cuit_buscado = input("Ingrese el CUIT buscado:")
-    cuit_buscado = cuit_buscado.rjust(11, '0')
     encontrado = False
 
-    with open("proveedor.txt", "r+") as archivo:
-        posant = 0  # Guarda la posición del puntero del archivo al inicio (posant=0)
-        linea = archivo.readline()
-        
-        while linea:
-            try:
-                v_CUIT, nombre, apellido = linea.strip().split(";")
-                if cuit_buscado == v_CUIT:
-                    encontrado = True
-                    archivo.seek(posant)  # Mueve el puntero al inicio de la línea a eliminar
-                    archivo.write(" " * len(linea))  # Escribe espacios en blanco para "borrar" la línea
-                    break  # Sale del bucle al eliminar la línea
-                else:
-                    posant = archivo.tell()  # Guarda la posición actual
-                linea = archivo.readline()
-            except ValueError:
-                # Si hay un error al hacer split (la línea no tiene el formato esperado),
-                # simplemente avanza a la siguiente línea
-                posant = archivo.tell()
-                linea = archivo.readline()
+    archivo = open("proveedor.txt", "r+")
+    posant = 0  # Guarda la posición del puntero del archivo al inicio (posant=0)
+    linea = archivo.readline()
+    
+    while linea:
+        try:
+            v_CUIT = linea.strip().split(";")[0]
+            if cuit_buscado == v_CUIT:
+                encontrado = True
+                archivo.seek(posant)  # Mueve el puntero al inicio de la línea a eliminar
+                archivo.write(" " * len(linea))  # Escribe espacios en blanco para "borrar" la línea
+                break  # Sale del bucle al eliminar la línea
+            else:
+                posant = archivo.tell()  # Guarda la posición actual
+            linea = archivo.readline()
+        except ValueError:
+            # Si hay un error al hacer split (la línea no tiene el formato esperado),
+            # simplemente avanza a la siguiente línea
+            posant = archivo.tell()
+            linea = archivo.readline()
 
         if encontrado:
             print("Proveedor dado de baja exitosamente")
@@ -115,10 +113,13 @@ def modificar_proveedor():
     linea=archivo.readline()
     encontrado=False   
     while linea and not encontrado: # Leo hasta fin de archivo (linea vacía) o hasta que lo encuentre
-        v_CUIT, v_nombre,v_apellido=linea.split(";")   #guardo los datos de la linea en 5 variables
+        valores_actuales = linea.split(";")
+        v_CUIT = valores_actuales[0]
+        v_monto = valores_actuales[3:] # Tomamos los montos actuales para volver a escribirlo en la nueva linea  
+
         if (CUIT==v_CUIT):        
             encontrado=True
-            linea_nueva = v_CUIT + ";" + nombre + ";" + apellido +"\n" #  ponemos el nombre del input, para que se modifique
+            linea_nueva = v_CUIT + ";" + nombre + ";" + apellido + ';' +';'.join(v_monto) #  ponemos el nombre del input, para que se modifique
         else:
             posant=archivo.tell() #guardo pos del puntero por si el siguiente registro es el que quiero modificar
         linea=archivo.readline() #leo sig linea      
@@ -134,27 +135,22 @@ def modificar_proveedor():
         
     input("Presione una tecla para continuar")
 #anda
-def listar_proveedores():
+def procesar_proveedores():
     try:
-        arch = open('proveedor.txt', 'r')  # abro el archivo en modo lectura
+        archivo = open('proveedor.txt', 'r')  # abro el archivo en modo lectura
+        linea=archivo.readline()
         
         # hago una lista vacía para almacenar los proveedores
         proveedores = []
         
         # leo línea por línea y almaceno cada proveedor en la lista
-        for linea in arch:
+        while linea:
             proveedores.append(linea.strip())
-        arch.close()  # Cierro el archivo
-        
-        # ordeno la lista de proveedores por CUIT con una funcion lambda y sort la cual va a hacer que splitee cuando haya un ; y agarre los valores de la primer columna
-        proveedores.sort(key=lambda x: (x.split(';')[0]))  # Ordeno por CUIT
-        
-        # Muestro los proveedores ordenados en la terminal con el ; reemplazado por espacio
-        for proveedor in proveedores:
-            datos = proveedor.split(';')
-            for dato in datos:
-                print(dato.replace(';', ' '), end='\t')  # Reemplazo ; por espacio y separo por tabulación
-            print()  # Salto de línea entre cada proveedor
+            linea=archivo.readline()
+
+        archivo.close()  # Cierro el archivo
+
+        return proveedores 
 
     except FileNotFoundError:
         print("El archivo proveedor.txt no se encuentra.")
@@ -162,35 +158,51 @@ def listar_proveedores():
 def carga_compras():
     print("Carga de compras de proveedores")
     
-    while True:
-        cuit = input("Ingrese el CUIT del proveedor (o -1 para finalizar): ")
-        if cuit == '-1':
-            break
+    cuit = input("Ingrese el CUIT del proveedor (o -1 para finalizar): ")
+    while cuit != "-1":
         
         monto = input("Ingrese el monto de la compra: ")
 
-        monto = f"{float(monto):.2f}".rjust(13, ' ')  # asegura el formato del monto
-        
         encontrado = False
-
-        lineas = []
         
-        with open("proveedor.txt", "r") as archivo:
-            for linea in archivo:
+        try:
+            archivo = open("proveedor.txt", "r+t")
+            linea = archivo.readline()
+            posant = 0
+
+            while linea and not encontrado:
                 datos = linea.strip().split(";")
                 if datos[0] == cuit:
                     encontrado = True
                     datos.append(monto)
-                    linea = ";".join(datos) + "\n"
-                lineas.append(linea)
-        
-        if not encontrado:
-            print("CUIT inexistente")
-        else:
-            with open("proveedor.txt", "w") as archivo:
-                archivo.writelines(lineas)
+                    nueva_linea = ";".join(datos) + "\n"
+                else:
+                    posant=archivo.tell() #guardo pos del puntero por si el siguiente registro es el que quiero modificar
+                linea=archivo.readline() #leo sig linea      
+            if encontrado:
+                archivo.seek(posant) #me posiciono en el registro a modificar
+                archivo.write(nueva_linea) # sobreescribo    
+            else:
+                print("CUIT inexistente")
+        except FileNotFoundError:
+            print("El archivo proveedor.txt no se encuentra.")
+        finally: 
+            archivo.close()
+        cuit = input("Ingrese el CUIT del proveedor (o -1 para finalizar): ")
     
     print("Carga de compras finalizada")
+
+def listar_proveedores_ordenados():
+    proveedores = procesar_proveedores()
+    # ordeno la lista de proveedores por CUIT con una funcion lambda y sort la cual va a hacer que splitee cuando haya un ; y agarre los valores de la primer columna
+    
+    # Muestro los proveedores ordenados en la terminal con el ; reemplazado por espacio
+    for proveedor in proveedores:
+        datos = proveedor.split(';')
+        for dato in datos:
+            print(dato.replace(';', ' '), end='\t')  # Reemplazo ; por espacio y separo por tabulación
+        print()  # Salto de línea entre cada proveedor
+
 #completar
 def listar_montos_compras():
     # Código para listar montos de compras por proveedor ordenados por CUIT desde el archivo 
@@ -199,51 +211,65 @@ def listar_montos_compras():
 def editar_montos_compras():
     # Código para editar montos de compras por proveedor en el archivo VER CONSIGNA PARA ENTENDER MEJOR
     pass
-#completar
+
 def proveedores_mayor_suma():
-    # Código para listar proveedores con mayor suma de compras desde el archivo SE IMPRIMEN TODOS AQUELLOS QUE TENGAN EL MONTO MAXIMO
-    pass
+    proveedores = procesar_proveedores()
+    max_compras = 0
+    for proveedor in proveedores:
+        datos = proveedor.split(';')
+        compras = datos[3:]
+        suma = 0
+        try: 
+            for monto in compras:
+                suma+=float(monto) 
+            if suma > max_compras:
+                max_compras = suma
+                max_proveedores = [{"cuit": datos[0], "monto": suma}]
+            elif suma == max_compras:
+                max_proveedores.append({"cuit": datos[0], "monto": suma})
+        except IndexError: 
+            pass #Proveedor no posee compras
+    print(max_proveedores)
 
+menu = [
+    "1. Alta de Proveedor",
+    "2. Baja de Proveedor",
+    "3. Modificación de Proveedor",
+    "4. Listado de Proveedores ordenado por CUIT",
+    "5. Carga de compras de Proveedor",
+    "6. Listado de monto de las compras por Proveedor ordenado por CUIT",
+    "7. Edición de Monto de las compras",
+    "8. Listado de Proveedores con mayor suma de compras registradas",
+    "9. Salir del programa"
+]
 
+funciones = [
+    alta_proveedor,
+    baja_proveedor,
+    modificar_proveedor,
+    listar_proveedores_ordenados,
+    carga_compras,
+    listar_montos_compras,
+    editar_montos_compras,
+    proveedores_mayor_suma,
+    exit
+]
 
 def main():
     while True:
         print("****** Menú ******")
-        print("1. Alta de Proveedor")
-        print("2. Baja de Proveedor")
-        print("3. Modificación de Proveedor")
-        print("4. Listado de Proveedores ordenado por CUIT")
-        print("5. Carga de compras de Proveedor")
-        print("6. Listado de monto de las compras por Proveedor ordenado por CUIT")
-        print("7. Edición de Monto de las compras")
-        print("8. Listado de Proveedores con mayor suma de compras registradas")
-        print("9. Salir del programa")
+        for item in menu:
+            print(item)
 
         opcion = input("Ingrese el número de la opción que desea realizar: ")
 
-        if opcion == "1":
-            alta_proveedor()
-        elif opcion == "2":
-            baja_proveedor()
-        elif opcion == "3":
-            modificar_proveedor()
-        elif opcion == "4":
-            listar_proveedores()
-        elif opcion == "5":
-            carga_compras()
-        elif opcion == "6":
-            listar_montos_compras()
-        elif opcion == "7":
-            editar_montos_compras()
-        elif opcion == "8":
-            proveedores_mayor_suma()
-        elif opcion == "9":
-            break
-        else:
-            print("Opción no válida. Por favor, elija una opción válida.")
+        try:
+            opcion = int(opcion)
+            if 1 <= opcion <= len(funciones):
+                funciones[opcion - 1]()
+            else:
+                print("Opción no válida. Por favor, elija una opción válida.")
+        except ValueError:
+            print("Por favor, ingrese un número válido.")
 
-            
 main()
-
-
-
