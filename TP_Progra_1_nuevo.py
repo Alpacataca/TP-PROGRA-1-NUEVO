@@ -205,8 +205,39 @@ def listar_proveedores_ordenados():
 
 #completar
 def listar_montos_compras():
-    # Código para listar montos de compras por proveedor ordenados por CUIT desde el archivo 
-    pass
+
+    try:
+        archivo = open('proveedor.txt', 'r')
+        lines = archivo.readline()
+
+        while lines:
+            campos = lines.strip().split(';')
+
+            if len(campos) >= 3:
+                cuit = campos[0]
+                nombre = campos[1]
+                apellido = campos[2]
+                compras = campos[3:]
+
+                print(f"\nCuit (Proveedor): {cuit}\nNombre: {nombre}\nApellido: {apellido}\nCompras: {', '.join(compras)}\n")
+
+            lines = archivo.readline()
+
+    except FileNotFoundError as error:
+        print("El archivo no existe")
+    finally:
+        try:
+            archivo.close()
+        except Exception as error:
+            pass
+    continuar = input("Realizar otra operacion?: ").upper()
+    if continuar == "N":    
+        exit()
+    else: 
+        main()
+
+
+
 #completar
 def editar_montos_compras():
     # Código para editar montos de compras por proveedor en el archivo VER CONSIGNA PARA ENTENDER MEJOR
