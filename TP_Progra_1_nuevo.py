@@ -1,7 +1,7 @@
 #anda
 def ingresodatos(): 
         CUIT=input("Ingrese el CUIT: ")
-        while (CUIT.isnumeric() and len(CUIT) == 11)== False:
+        while not CUIT.isnumeric() and not len(CUIT) == 11:
 
             print("CUIT inválido. Debe contener exactamente 11 dígitos numéricos.")
 
@@ -33,14 +33,16 @@ def ingresodatos():
         nombre_proveedor=nombre_proveedor.ljust(25,' ')
 
         apellido_proveedor = apellido_proveedor.ljust(25,' ')
+
+        isactive = str(1)
         
-        return CUIT,nombre_proveedor,apellido_proveedor
+        return CUIT, nombre_proveedor, apellido_proveedor, isactive
 #anda pero ver el tema de repeticion de cuits
 def alta_proveedor():       
 
         print("Ingreso de proveedores")
 
-        CUIT, nombre, apellido = ingresodatos()
+        CUIT, nombre, apellido, isactive = ingresodatos()
 
         archivo = open("proveedor.txt", "a+t") 
 
@@ -51,22 +53,33 @@ def alta_proveedor():
         encontrado = False
 
         while linea and not encontrado:          
-            if len(linea.split(";")) == 4:
-                v_CUIT = linea.split(";")[0]  #lees el archivo y si hay algo en la linea, lo asignas a las variables
-
-                if (CUIT == v_CUIT):
+            if len(linea.split(";")) >= 4:
+                v_CUIT = linea.strip().split(";")[0]  #lees el archivo y si hay algo en la linea, lo asignas a las variables
+                activo = linea.strip().split(";")[3]
+                print (CUIT, v_CUIT)
+                print (CUIT == v_CUIT)
+                print (activo)
+                print (type(activo))
+                
+                if CUIT == v_CUIT and activo == "1":
                     encontrado = True
+                    print ("Hola")
+                elif (CUIT == v_CUIT) and activo == "0":
+                    encontrado = True
+                    print ("CUIT dado de baja. ¿Reactivar?: ")
+                    if input("Ingrese: (S/N)").upper() == "S":
+                        print("MENSAJE DE ERROR Y RESTO DE CODIGO")
+                        break
                 else:
                     linea = archivo.readline()
             else:
                 linea = archivo.readline() #leo la siguiente linea del archivo    
 
         if not encontrado:
-            linea= CUIT + ";" + nombre + ";" + apellido + "\n"
+            linea= CUIT + ";" + nombre + ";" + apellido + ";" + isactive + "\n"
             archivo.write(linea) # agrego el proveedor al final del archivo ya que no se lo encontro en el archivo y se llego al final
         else:
             print("CUIT existente, no puede ser duplicado. ")
-            
             
         archivo.close() 
 
@@ -82,41 +95,42 @@ def baja_proveedor():
     archivo = open("proveedor.txt", "r+")
     posant = 0  # Guarda la posición del puntero del archivo al inicio (posant=0)
     linea = archivo.readline()
-    
-    while linea:
+
+    while linea and not encontrado:
         try:
-            v_CUIT = linea.strip().split(";")[0]
-            if cuit_buscado == v_CUIT:
+            v_CUIT = linea.strip().split(";")
+            if cuit_buscado == v_CUIT[0] and v_CUIT[3] == "1":
                 encontrado = True
+                v_CUIT[3] = "0"
+                
                 archivo.seek(posant)  # Mueve el puntero al inicio de la línea a eliminar
-                archivo.write(" " * len(linea))  # Escribe espacios en blanco para "borrar" la línea
-                break  # Sale del bucle al eliminar la línea
+                archivo.write(f"{v_CUIT[0].rjust(11)};{v_CUIT[1].rjust(25)};{v_CUIT[2].rjust(25)};{v_CUIT[3]}\n")  # Vuelve a escribir la línea con el campo modificado
+                print(f"El CUIT {v_CUIT[0]} fue dado de baja")
             else:
                 posant = archivo.tell()  # Guarda la posición actual
-            linea = archivo.readline()
+                linea = archivo.readline()
         except ValueError:
             # Si hay un error al hacer split (la línea no tiene el formato esperado),
             # simplemente avanza a la siguiente línea
             posant = archivo.tell()
             linea = archivo.readline()
 
-        if encontrado:
-            print("Proveedor dado de baja exitosamente")
-        else:
-            print("CUIT no encontrado o dado de baja")
 #anda
 def modificar_proveedor():
+
     print("Modificaciones de proveedores")
+
+    listar_proveedores_ordenados()
+
     archivo = open("proveedor.txt", "r+t")
-    CUIT, nombre, apellido = ingresodatos()
+    CUIT, nombre, apellido, activo = ingresodatos()
     posant=0 # Guardo la posicion del puntero del archivo al inicio (posant=0)
     linea=archivo.readline()
     encontrado=False   
-    while linea and not encontrado: # Leo hasta fin de archivo (linea vacía) o hasta que lo encuentre
-        valores_actuales = linea.split(";")
+    while linea and encontrado == False: # Leo hasta fin de archivo (linea vacía) o hasta que lo encuentre
+        valores_actuales = linea.strip().split(";")
         v_CUIT = valores_actuales[0]
         v_monto = valores_actuales[3:] # Tomamos los montos actuales para volver a escribirlo en la nueva linea  
-
         if (CUIT==v_CUIT):        
             encontrado=True
             linea_nueva = v_CUIT + ";" + nombre + ";" + apellido + ';' +';'.join(v_monto) #  ponemos el nombre del input, para que se modifique
@@ -193,34 +207,53 @@ def carga_compras():
     print("Carga de compras finalizada")
 
 def listar_proveedores_ordenados():
-    proveedores = procesar_proveedores()
-    # ordeno la lista de proveedores por CUIT con una funcion lambda y sort la cual va a hacer que splitee cuando haya un ; y agarre los valores de la primer columna
+
+
+    #proveedores = procesar_proveedores()
     
+    archivo = open("proveedor.txt", "r")
+
+    # ordeno la lista de proveedores por CUIT con una funcion lambda y sort la cual va a hacer que splitee cuando haya un ; y agarre los valores de la primer columna
+    # carga todo en variable a traves de un generador
+    ordenados = sorted((line.strip().split(';') for line in archivo), key=lambda x: x[0]) # sorted dobre strip/split por compresion, key CUIT
     # Muestro los proveedores ordenados en la terminal con el ; reemplazado por espacio
-    for proveedor in proveedores:
-        datos = proveedor.split(';')
-        for dato in datos:
-            print(dato.replace(';', ' '), end='\t')  # Reemplazo ; por espacio y separo por tabulación
-        print()  # Salto de línea entre cada proveedor
 
-#completar
+    archivo.close()
+
+    print ("\nProveedores activos:\n")
+
+    encabezados = ["CUIT", "Proveedor", "Apellido"]
+    print (f"{encabezados[0].ljust(15)} | {encabezados[1].ljust(30)} | {encabezados[2].ljust(15)}") # f-STRING formateado
+
+    for proveedor in ordenados:
+        if proveedor[3].strip() == "1":
+
+            CUIT, nombre, apellido = proveedor[:3]
+            print(f"{CUIT.ljust(15)} | {nombre.ljust(30)} | {apellido.ljust(15)}")
+     
+    print()
+
 def listar_montos_compras():
-
+    listar_proveedores_ordenados()
     try:
         archivo = open('proveedor.txt', 'r')
         lines = archivo.readline()
-
+        num_CUIT = input("Ingrese CUIT: ")
         while lines:
             campos = lines.strip().split(';')
 
-            if len(campos) >= 3:
+            if len(campos) >= 4 and campos[0] == num_CUIT:
                 cuit = campos[0]
                 nombre = campos[1]
                 apellido = campos[2]
-                compras = campos[3:]
+                compras = campos[4:]
 
-                print(f"\nCuit (Proveedor): {cuit}\nNombre: {nombre}\nApellido: {apellido}\nCompras: {', '.join(compras)}\n")
-
+                print (f"\nLista de compras para {cuit}")
+                print (f"{'Compras'.ljust(15)} | {'Monto'.rjust(15)}")
+                for i in range(len(compras)):
+                    n_compra = "Compra " + str(i)
+                    print(f"{n_compra.ljust(15)} | {str(float(compras[i])).rjust(15)}")
+                
             lines = archivo.readline()
 
     except FileNotFoundError as error:
