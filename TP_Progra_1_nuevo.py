@@ -88,7 +88,7 @@ def alta_proveedor():
         
         input("Presione una tecla para continuar")
 
-#no anda
+#anda
 def baja_proveedor():
     print("Baja de proveedores")
 
