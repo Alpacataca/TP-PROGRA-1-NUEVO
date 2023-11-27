@@ -58,10 +58,10 @@ def alta_proveedor():
             if len(linea.split(";")) >= 4:
                 v_CUIT = linea.strip().split(";")[0]  #lees el archivo y si hay algo en la linea, lo asignas a las variables
                 activo = linea.strip().split(";")[3]
-                print (CUIT, v_CUIT)
-                print (CUIT == v_CUIT)
-                print (activo)
-                print (type(activo))
+                #print (CUIT, v_CUIT)
+                #print (CUIT == v_CUIT)
+                #print (activo)
+                #print (type(activo))
                 
                 if CUIT == v_CUIT and activo == "1":
                     encontrado = True
@@ -107,7 +107,7 @@ def baja_proveedor():
                 v_CUIT[3] = "0"
                 
                 archivo.seek(posant)  # Mueve el puntero al inicio de la línea a eliminar
-                archivo.write(f"{v_CUIT[0].rjust(11)};{v_CUIT[1].rjust(25)};{v_CUIT[2].rjust(25)};{v_CUIT[3]}\n")  # Vuelve a escribir la línea con el campo modificado
+                archivo.write(f"{v_CUIT[0].rjust(11)};{v_CUIT[1].rjust(25)};{v_CUIT[2].rjust(25)};{v_CUIT[3]}")  # Vuelve a escribir la línea con el campo modificado
                 print(f"El CUIT {v_CUIT[0]} fue dado de baja")
             else:
                 posant = archivo.tell()  # Guarda la posición actual
