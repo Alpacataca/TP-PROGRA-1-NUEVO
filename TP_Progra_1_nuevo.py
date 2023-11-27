@@ -1,3 +1,4 @@
+
 #anda
 def ingresodatos(): 
         CUIT=input("Ingrese el CUIT: ")
@@ -37,7 +38,8 @@ def ingresodatos():
         isactive = str(1)
         
         return CUIT, nombre_proveedor, apellido_proveedor, isactive
-#anda pero ver el tema de repeticion de cuits
+
+#anda
 def alta_proveedor():       
 
         print("Ingreso de proveedores")
@@ -85,7 +87,8 @@ def alta_proveedor():
 
         
         input("Presione una tecla para continuar")
-#anda pero chequear que se salga el enter y que no quede una linea vacia cuando elimino
+
+#no anda
 def baja_proveedor():
     print("Baja de proveedores")
 
@@ -148,6 +151,7 @@ def modificar_proveedor():
     archivo.close() # Cierro el archivo
         
     input("Presione una tecla para continuar")
+
 #anda
 def procesar_proveedores():
     try:
@@ -168,7 +172,8 @@ def procesar_proveedores():
 
     except FileNotFoundError:
         print("El archivo proveedor.txt no se encuentra.")
-#arreglar todo
+
+#anda
 def carga_compras():
     print("Carga de compras de proveedores")
     
@@ -206,6 +211,7 @@ def carga_compras():
     
     print("Carga de compras finalizada")
 
+#anda
 def listar_proveedores_ordenados():
 
 
@@ -233,6 +239,7 @@ def listar_proveedores_ordenados():
      
     print()
 
+#anda
 def listar_montos_compras():
     listar_proveedores_ordenados()
     try:
@@ -269,13 +276,47 @@ def listar_montos_compras():
     else: 
         main()
 
+#anda
+def modificar_compras():
+    print("Modificación de compras de proveedores")
+    
+    cuit = input("Ingrese el CUIT del proveedor: ")
+    
+    try:
+        archivo = open("proveedor.txt", "r+t")
+        linea = archivo.readline()
+        posant = 0
+        encontrado = False
 
+        while linea and not encontrado:
 
-#completar
-def editar_montos_compras():
-    # Código para editar montos de compras por proveedor en el archivo VER CONSIGNA PARA ENTENDER MEJOR
-    pass
+            datos = linea.strip().rstrip(';').split(";")
+            if datos[0] == cuit:
+                encontrado = True
+                compras = {f"{i}": compra for i, compra in enumerate(datos[4:], start=1)}  #creo el diccionario con los valores
+                for key, value in compras.items():
+                    print(f"{key}: {value}\n")
+                num_compra = input("Ingrese el numero de compra a modificar: ")
+                nuevo_monto = input("Ingrese el nuevo monto de la compra: ")
+                compras[num_compra] = nuevo_monto       #actualizo el dic con el nuevo monto
+                nueva_linea = ";".join(datos[:4] + list(compras.values())) + "\n"      #creo la linea nueva concatenadno los valores del prov con los valores nuevos
+            else:
+                posant=archivo.tell() #guardo pos del puntero por si el siguiente registro es el que quiero modificar
+            linea=archivo.readline() #leo sig linea      
+        if encontrado:
+            archivo.seek(posant) #me posiciono en el registro a modificar
+            archivo.write(nueva_linea) # sobreescribo    
+        else:
+            print("CUIT inexistente")
+    except FileNotFoundError:
+        print("El archivo proveedor.txt no se encuentra.")
+    finally: 
+        archivo.close()
+    print("Modificación de compras finalizada, así quedaron los montos:")
+    for key, value in compras.items():
+        print(f"{key}: {value}\n")
 
+#anda
 def proveedores_mayor_suma():
     proveedores = procesar_proveedores()
     max_compras = 0
@@ -314,7 +355,7 @@ funciones = [
     listar_proveedores_ordenados,
     carga_compras,
     listar_montos_compras,
-    editar_montos_compras,
+    modificar_compras,
     proveedores_mayor_suma,
     exit
 ]
