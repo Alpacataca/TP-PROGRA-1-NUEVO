@@ -2,7 +2,7 @@
 #anda
 def ingresodatos(): 
         CUIT=input("Ingrese el CUIT: ")
-        while not CUIT.isnumeric() or len(CUIT) == 11:
+        while not CUIT.isnumeric() or len(CUIT) != 11:
 
             print("CUIT inválido. Debe contener exactamente 11 dígitos numéricos.")
 
