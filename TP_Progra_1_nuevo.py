@@ -36,15 +36,17 @@ def ingresodatos():
         apellido_proveedor = apellido_proveedor.ljust(25,' ')
 
         isactive = str(1)
+
+        resto = str("").ljust(100)
         
-        return CUIT, nombre_proveedor, apellido_proveedor, isactive
+        return CUIT, nombre_proveedor, apellido_proveedor, isactive, resto
 
 #anda
 def alta_proveedor():       
 
         print("Ingreso de proveedores")
 
-        CUIT, nombre, apellido, isactive = ingresodatos()
+        CUIT, nombre, apellido, isactive, resto = ingresodatos()
 
         archivo = open("proveedor.txt", "a+t") 
 
@@ -65,7 +67,7 @@ def alta_proveedor():
                 
                 if CUIT == v_CUIT and activo == "1":
                     encontrado = True
-                    print ("Hola")
+                    
                 elif (CUIT == v_CUIT) and activo == "0":
                     encontrado = True
                     print ("CUIT dado de baja. ¿Reactivar?: ")
@@ -78,7 +80,7 @@ def alta_proveedor():
                 linea = archivo.readline() #leo la siguiente linea del archivo    
 
         if not encontrado:
-            linea= CUIT + ";" + nombre + ";" + apellido + ";" + isactive + "\n"
+            linea= CUIT + ";" + nombre + ";" + apellido + ";" + isactive + resto +  "\n"
             archivo.write(linea) # agrego el proveedor al final del archivo ya que no se lo encontro en el archivo y se llego al final
         else:
             print("CUIT existente, no puede ser duplicado. ")
@@ -194,7 +196,7 @@ def carga_compras():
                 if datos[0] == cuit:
                     encontrado = True
                     datos.append(monto)
-                    nueva_linea = ";".join(datos) + "\n"
+                    nueva_linea = ";".join(datos)
                 else:
                     posant=archivo.tell() #guardo pos del puntero por si el siguiente registro es el que quiero modificar
                 linea=archivo.readline() #leo sig linea      
