@@ -142,7 +142,7 @@ def modificar_proveedor():
             v_monto = valores_actuales[4:] # Tomamos los montos actuales para volver a escribirlo en la nueva linea  
             if (CUIT==v_CUIT):        
                 encontrado=True
-                linea_nueva = v_CUIT + ";" + nombre + ";" + apellido + ';' +';'.join(v_monto) #  ponemos el nombre del input, para que se modifique
+                linea_nueva = v_CUIT + ";" + nombre + ";" + apellido + ';' +activo+';'+';'.join(v_monto) #  ponemos el nombre del input, para que se modifique
             else:
                 posant=archivo.tell() #guardo pos del puntero por si el siguiente registro es el que quiero modificar
             linea=archivo.readline() #leo sig linea      
@@ -167,64 +167,65 @@ def carga_compras():
     
     cuit = input("Ingrese el CUIT del proveedor (o -1 para finalizar): ")
     while cuit != "-1":
-        
         monto = input("Ingrese el monto de la compra: ")
-
         encontrado = False
+        lineas_actualizadas = []
         
         try:
-            archivo = open("proveedor.txt", "r+t")
-            linea = archivo.readline()
-            posant = 0
-
-            while linea and not encontrado:
+            archivo = open("proveedor.txt", "r")
+            
+            for linea in archivo:
                 datos = linea.rstrip('\n').split(";")
                 if datos[0] == cuit:
                     encontrado = True
                     datos.append(monto)
                     nueva_linea = ";".join(datos) + "\n"
-                    print(nueva_linea)
+                    lineas_actualizadas.append(nueva_linea)
                 else:
-                    posant=archivo.tell() #guardo pos del puntero por si el siguiente registro es el que quiero modificar
-                linea=archivo.readline() #leo sig linea      
-            if encontrado:
-                archivo.seek(posant) #me posiciono en el registro a modificar
-                archivo.write(nueva_linea) # sobreescribo    
-            else:
+                    lineas_actualizadas.append(linea)
+                
+            archivo.close()
+            
+            archivo = open("proveedor.txt", "w")
+            for linea in lineas_actualizadas:
+                archivo.write(linea)
+            archivo.close()
+                
+            if not encontrado:
                 print("CUIT inexistente")
         except FileNotFoundError:
             print("El archivo proveedor.txt no se encuentra.")
-        finally: 
-            archivo.close()
+        
         cuit = input("Ingrese el CUIT del proveedor (o -1 para finalizar): ")
     
     print("Carga de compras finalizada")
 
 #anda
 def listar_proveedores_ordenados():
-    print ("\nProveedores activos:\n")
-    encabezados = ["CUIT", "Proveedor", "Apellido"]
-    print (f"{encabezados[0].ljust(15)} | {encabezados[1].ljust(30)} | {encabezados[2].ljust(15)}") # f-STRING formateado
 
-    try:
-        archivo = open('proveedor.txt', 'r')  # abro el archivo en modo lectura
-        linea=archivo.readline()
-        
-        while linea:
-            datos = linea.rstrip().split(';')
-            if datos[3].strip() == "1":
-                CUIT, nombre, apellido = datos[:3]
-                print(f"{CUIT.ljust(15)} | {nombre.ljust(30)} | {apellido.ljust(15)}")
-                linea=archivo.readline()
-        archivo.close()  # Cierro el archivo
 
-    except FileNotFoundError:
-        print("El archivo proveedor.txt no se encuentra.")
+    #proveedores = procesar_proveedores()
+    
+    archivo = open("proveedor.txt", "r")
 
-   
     # ordeno la lista de proveedores por CUIT con una funcion lambda y sort la cual va a hacer que splitee cuando haya un ; y agarre los valores de la primer columna
     # carga todo en variable a traves de un generador
     ordenados = sorted((line.strip().split(';') for line in archivo), key=lambda x: x[0]) # sorted dobre strip/split por compresion, key CUIT
+    # Muestro los proveedores ordenados en la terminal con el ; reemplazado por espacio
+
+    
+
+    encabezados = ["CUIT", "Proveedor", "Apellido"]
+    print (f"{encabezados[0].ljust(15)} | {encabezados[1].ljust(30)} | {encabezados[2].ljust(15)}") # f-STRING formateado
+
+    for proveedor in ordenados:
+        if proveedor[3].strip() == "1":
+
+            CUIT, nombre, apellido = proveedor[:3]
+            print(f"{CUIT.ljust(15)} | {nombre.ljust(30)} | {apellido.ljust(15)}")
+     
+    print()
+    archivo.close()
    
 
 #anda
@@ -306,29 +307,41 @@ def modificar_compras():
 
 def proveedores_mayor_suma():
     max_compras = 0
+    max_proveedores = []
+
     try:
-        archivo = open('proveedor.txt', 'r')  # abro el archivo en modo lectura
-        linea=archivo.readline()
+        archivo = open('proveedor.txt', 'r')
+        linea = archivo.readline()
+
         while linea:
             datos = linea.rstrip().split(';')
-            compras = datos[3:]
+            compras = datos[4:]
             suma = 0
-            try: 
+
+            try:
                 for monto in compras:
-                    suma+=float(monto) 
-                    if suma > max_compras:
-                        max_compras = suma
-                        max_proveedores = [{"cuit": datos[0], "monto": suma}]
-                    elif suma == max_compras:
-                        max_proveedores.append({"cuit": datos[0], "monto": suma})
-                linea=archivo.readline()
-            except IndexError: 
-                pass #Proveedor no posee compras
-            print(max_proveedores)
+                    if monto.strip():  # verifico si el monto no está vacío antes de convertir a float
+                        suma += float(monto)
+
+                if suma > max_compras:
+                    max_compras = suma
+                    max_proveedores = [{"cuit": datos[0], "monto": suma}]
+                elif suma == max_compras:
+                    max_proveedores.append({"cuit": datos[0], "monto": suma})
+
+                linea = archivo.readline()
+
+            except IndexError:
+                pass  # proveedor no posee compras
+
+        archivo.close()
+
+        for proveedor in max_proveedores:
+            print(f"CUIT: {proveedor['cuit']}, Suma de montos máxima: {proveedor['monto']}")
+
     except FileNotFoundError:
         print("El archivo proveedor.txt no se encuentra.")
-    finally: 
-        archivo.close()
+
 
 menu = [
     "1. Alta de Proveedor",
@@ -364,11 +377,16 @@ def main():
 
         try:
             opcion = int(opcion)
-            if 1 <= opcion <= len(funciones):
+            if 1 <= opcion <= len(funciones):  
                 funciones[opcion - 1]()
+            elif opcion == 9: 
+                break
             else:
                 print("Opción no válida. Por favor, elija una opción válida.")
-        except ValueError:
+        except ValueError as error:
+            print(error)
             print("Por favor, ingrese un número válido.")
 
+
 main()
+#proveedores_mayor_suma()
