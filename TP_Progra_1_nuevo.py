@@ -36,17 +36,15 @@ def ingresodatos():
         apellido_proveedor = apellido_proveedor.ljust(25,' ')
 
         isactive = str(1)
-
-        resto = str("").ljust(100)
         
-        return CUIT, nombre_proveedor, apellido_proveedor, isactive, resto
+        return CUIT, nombre_proveedor, apellido_proveedor, isactive
 
 #anda
 def alta_proveedor():       
 
         print("Ingreso de proveedores")
 
-        CUIT, nombre, apellido, isactive, resto = ingresodatos()
+        CUIT, nombre, apellido, isactive = ingresodatos()
         try: 
                 
             archivo = open("proveedor.txt", "a+t") 
@@ -80,7 +78,7 @@ def alta_proveedor():
                     linea = archivo.readline() #leo la siguiente linea del archivo    
 
             if not encontrado:
-                linea= CUIT + ";" + nombre + ";" + apellido + ";" + isactive + resto + "\n"
+                linea= CUIT + ";" + nombre + ";" + apellido + ";" + isactive + "\n"
                 archivo.write(linea) # agrego el proveedor al final del archivo ya que no se lo encontro en el archivo y se llego al final
             else:
                 print("CUIT existente, no puede ser duplicado. ")
